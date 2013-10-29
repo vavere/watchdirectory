@@ -1,5 +1,5 @@
 {
-  "name": "watchdirectory",
+  "name": "watchdir",
   "main": "index",
   "version": "0.2.0-alfa1",
   "dependencies": {
