@@ -1,11 +1,11 @@
 {
-    "name": "watchdirectory",
-    "main": "index",
-    "version": "0.1.5",
-    "dependencies": {
-    },
-    "repository": {
-      "type": "git",
-      "url": "git@github.com:vavere/watchdirectory.git"
-    }
+  "name": "watchdirectory",
+  "main": "index",
+  "version": "0.1.5",
+  "dependencies": {
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:vavere/watchdirectory.git"
+  }
 }
