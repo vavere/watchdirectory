@@ -1,7 +1,7 @@
 var fs = require('fs');
 var np = require('path');
 
-exports.watch = function watch(dirname, options, listener) {
+module.exports = function watchdir(dirname, options, listener) {
   if (listener === undefined) {
     listener = options;
     options = {};
