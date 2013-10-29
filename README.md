@@ -1,6 +1,8 @@
 watchdirectory
 ==============
 
+LAURIS: Esmu pārlicis atpakaļ uz Javascript, lai man būtu ērtāk izmainīt uz async initilize.
+
 Similar to node fs.watchFile but watches a directory recursively and lets you unwatch as well
 
 ## Install
