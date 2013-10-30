@@ -8,7 +8,7 @@ Similar to node fs.watchFile but watches a directory recursively and lets you un
 ## Install
 
 <pre>
-  npm install watchdirectory
+  npm install watchdir
 </pre>
 
 ## Purpose
@@ -16,9 +16,9 @@ Similar to node fs.watchFile but watches a directory recursively and lets you un
 This module provides the ability to recursively watch a directory for changes.
 Unlike similar modules, this one can unwatch as well.
 
-#### watchdirectory.watchDirectory(root, [options,] callback)
+#### watchdir(root, [options,] callback)
 
-The first argument is the directory root you want to watch. 
+The first argument is the directory root you want to watch.
 
 The options object is passed to fs.watchFile but can also be used to provide additional watchDirectory specific options:
 
@@ -28,7 +28,9 @@ The options object is passed to fs.watchFile but can also be used to provide add
 * `'exclude'` - Can be a function or RegExp or string.  If it's a string then that will be considered an extension to check.  Your callback will not be notified about files that match.
 
 <pre>
-  var unwatch = watchdirectory.watchDirectory('src', {filter:'.js'}, function (filename, curr, prev, change) {
+  var watchdir = require('watchdir');
+
+  var unwatch = watchdir('src', {filter:'.js'}, function (filename, curr, prev, change) {
     if (change == 'initial') {
       // filename found during initial pass
     }
@@ -44,5 +46,7 @@ The options object is passed to fs.watchFile but can also be used to provide add
   });
 
   // later on to unwatch, just call the previously returned function
-  unwatch();
-</pre>  
+  setTimeout(function() {
+    unwatch();
+  }, 60 * 1000)
+</pre>
