@@ -70,32 +70,37 @@ module.exports = function watchdir(dirname, options, listener) {
     return delete watchedFiles[filename];
   }
 
-  function watchFile(filename, depth, stats) {
-    if (depth === undefined) {
-      depth = 0;
-    }
-    if (stats === undefined) {
-      stats = fs.statSync(filename);
-    }
-    if (stats.nlink > 0) {
-      if (stats.isDirectory()) {
-        if (!matches(filename, options.exclude, false)) {
-          if (depth === 0 || options.recursive) {
-            var _ref = fs.readdirSync(filename);
-            for (var _i = 0, _len = _ref.length; _i < _len; _i++) {
-              var child = _ref[_i];
-              child = np.join(filename, child);
-              watchFile(child, depth + 1);
+  function watchFile(filename, depth, prevStats) {
+    depth = depth || 0;
+
+    if (!prevStats)
+      fs.stat(filename, step);
+    else
+      step(null, prevStats);
+
+    function step(err, stats) {
+      if (err) return;
+      if (stats.nlink > 0) {
+        if (stats.isDirectory()) {
+          if (!matches(filename, options.exclude, false)) {
+            if (depth === 0 || options.recursive) {
+              fs.readdir(filename, function (err, files) {
+                for (var i = 0; i < files.length; i++) {
+                  var child = files[i];
+                  child = np.join(filename, child);
+                  watchFile(child, depth + 1);
+                }
+              });
             }
           }
         }
-      }
-      if (watchedFiles[filename] === undefined) {
-        var boundListener = fsListener.bind(this, filename, depth);
-        watchedFiles[filename] = boundListener;
-        fs.watchFile(filename, options, boundListener);
-        if (initial) {
-          notifyListener(filename, stats, stats, initial);
+        if (!watchedFiles[filename]) {
+          var boundListener = fsListener.bind(this, filename, depth);
+          watchedFiles[filename] = boundListener;
+          fs.watchFile(filename, options, boundListener);
+          if (initial) {
+            notifyListener(filename, stats, stats, initial);
+          }
         }
       }
     }
