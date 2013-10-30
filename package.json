@@ -1,7 +1,7 @@
 {
   "name": "watchdir",
   "main": "index",
-  "version": "0.2.0-alfa3",
+  "version": "0.2.0",
   "dependencies": {
   },
   "repository": {
