@@ -117,7 +117,7 @@ module.exports = function watchdir(dirname, options, listener) {
       if (!matches(filename, options.exclude, false)) {
         if (depth === 0 || options.recursive) {
           fs.readdir(filename, function (err, files) {
-            async.each(files, function (child, cb) {
+            async.eachLimit(files, 10, function (child, cb) {
               watchFile(np.join(filename, child), depth + 1, cb);
             }, cb);
           });
