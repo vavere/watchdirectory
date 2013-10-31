@@ -50,6 +50,7 @@ module.exports = function watchdir(dirname, options, listener) {
   }
 
   var watchedFiles = {
+    onready: function () {},
     unwatch: function () {
       for (var key in this)
         unwatchFile(key);
@@ -130,6 +131,7 @@ module.exports = function watchdir(dirname, options, listener) {
   watchFile(dirname, function () {
     initial = 'created';
     debug('ready');
+    watchedFiles.onready();
   });
   return watchedFiles;
 };
