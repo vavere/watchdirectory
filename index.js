@@ -1,5 +1,6 @@
 var fs = require('fs');
 var np = require('path');
+var debug = require('debug')('watchdir');
 
 module.exports = function watchdir(dirname, options, listener) {
   if (listener === undefined) {
@@ -73,6 +74,7 @@ module.exports = function watchdir(dirname, options, listener) {
   function watchFile(filename, depth, prevStats) {
     depth = depth || 0;
 
+    debug('watch ' + filename);
     if (!prevStats)
       fs.stat(filename, step);
     else
@@ -106,6 +108,7 @@ module.exports = function watchdir(dirname, options, listener) {
     }
   }
 
+  debug('init');
   var initial = options.initial;
   watchFile(dirname);
   initial = 'created';
@@ -113,5 +116,6 @@ module.exports = function watchdir(dirname, options, listener) {
     for (var key in watchedFiles)
       unwatchFile(key);
   };
+    debug('ready');
 };
 
