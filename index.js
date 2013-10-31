@@ -89,6 +89,7 @@ module.exports = function watchdir(dirname, options, listener) {
       prevStats = null;
     }
     depth = depth || 0;
+    cb = cb || function () {};
 
     debug('watch ' + filename);
     if (!prevStats)
