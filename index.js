@@ -1,5 +1,6 @@
 var fs = require('fs');
 var np = require('path');
+var async = require('async');
 var debug = require('debug')('watchdir');
 
 module.exports = function watchdir(dirname, options, listener) {
@@ -48,7 +49,12 @@ module.exports = function watchdir(dirname, options, listener) {
     }
   }
 
-  var watchedFiles = {};
+  var watchedFiles = {
+    unwatch: function () {
+      for (var key in this)
+        unwatchFile(key);
+    }
+  };
 
   function notifyListener(filename, curr, prev, change) {
     if (filter(filename)) {
@@ -71,7 +77,16 @@ module.exports = function watchdir(dirname, options, listener) {
     return delete watchedFiles[filename];
   }
 
-  function watchFile(filename, depth, prevStats) {
+  function watchFile(filename, depth, prevStats, cb) {
+    if (typeof depth == 'function') {
+      cb = depth;
+      depth = null;
+      prevStats = null;
+    }
+    if (typeof prevStats == 'function') {
+      cb = prevStats;
+      prevStats = null;
+    }
     depth = depth || 0;
 
     debug('watch ' + filename);
@@ -81,41 +96,41 @@ module.exports = function watchdir(dirname, options, listener) {
       step(null, prevStats);
 
     function step(err, stats) {
-      if (err) return;
-      if (stats.nlink > 0) {
-        if (stats.isDirectory()) {
-          if (!matches(filename, options.exclude, false)) {
-            if (depth === 0 || options.recursive) {
-              fs.readdir(filename, function (err, files) {
-                for (var i = 0; i < files.length; i++) {
-                  var child = files[i];
-                  child = np.join(filename, child);
-                  watchFile(child, depth + 1);
-                }
-              });
-            }
-          }
+      if (err) return cb(err);
+      if (!stats.nlink) cb();
+
+      // watch file
+      if (!watchedFiles[filename]) {
+        var boundListener = fsListener.bind(this, filename, depth);
+        watchedFiles[filename] = boundListener;
+        fs.watchFile(filename, options, boundListener);
+        if (initial) {
+          notifyListener(filename, stats, stats, initial);
         }
-        if (!watchedFiles[filename]) {
-          var boundListener = fsListener.bind(this, filename, depth);
-          watchedFiles[filename] = boundListener;
-          fs.watchFile(filename, options, boundListener);
-          if (initial) {
-            notifyListener(filename, stats, stats, initial);
-          }
+      }
+      // watch directory
+      if (!stats.isDirectory())
+        return cb();
+
+      if (!matches(filename, options.exclude, false)) {
+        if (depth === 0 || options.recursive) {
+          fs.readdir(filename, function (err, files) {
+            async.each(files, function (child, cb) {
+              watchFile(np.join(filename, child), depth + 1, cb);
+            }, cb);
+          });
         }
       }
     }
+
   }
 
   debug('init');
   var initial = options.initial;
-  watchFile(dirname);
-  initial = 'created';
-  return function unwatch() {
-    for (var key in watchedFiles)
-      unwatchFile(key);
-  };
+  watchFile(dirname, function () {
+    initial = 'created';
     debug('ready');
+  });
+  return watchedFiles;
 };
 
