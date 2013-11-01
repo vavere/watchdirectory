@@ -3,7 +3,7 @@
   "main": "index",
   "version": "0.3.1",
   "dependencies": {
-    "debug": "~0.7.3"
+    "debug": "0.7.x"
   },
   "repository": {
     "type": "git",
