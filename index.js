@@ -1,6 +1,5 @@
 var fs = require('fs');
 var np = require('path');
-var async = require('async');
 var debug = require('debug')('watchdir');
 
 module.exports = function watchdir(dirname, options, listener) {
@@ -117,9 +116,9 @@ module.exports = function watchdir(dirname, options, listener) {
       if (!matches(filename, options.exclude, false)) {
         if (depth === 0 || options.recursive) {
           fs.readdir(filename, function (err, files) {
-            async.eachLimit(files, 10, function (child, cb) {
+            serial(files, function (child, cb) {
               watchFile(np.join(filename, child), depth + 1, cb);
-            }, cb);
+            }, cb)
           });
         }
       }
@@ -137,3 +136,22 @@ module.exports = function watchdir(dirname, options, listener) {
   return watchedFiles;
 };
 
+function serial(array, iterator, callback) {
+  var completed = 0;
+  var len = array.length;
+
+  function complete(err) {
+    if (err)
+      return callback(err);
+    completed += 1;
+    if (completed === len)
+      return callback();
+    iterate();
+  }
+
+  function iterate() {
+    iterator(array[completed], complete);
+  }
+
+  iterate();
+};
